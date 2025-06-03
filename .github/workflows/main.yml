@@ -1,0 +1,36 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and Push Web App Image
+      run: |
+        docker build -t webapp ./web
+        docker tag webapp:latest 471112598032.dkr.ecr.us-east-1.amazonaws.com/webapp:latest
+        docker push 471112598032.dkr.ecr.us-east-1.amazonaws.com/webapp:latest
+
+    - name: Build and Push MySQL Image
+      run: |
+        docker build -t mysql ./mysql
+        docker tag mysql:latest 471112598032.dkr.ecr.us-east-1.amazonaws.com/mysql:latest
+        docker push 471112598032.dkr.ecr.us-east-1.amazonaws.com/mysql:latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: us-east-1
